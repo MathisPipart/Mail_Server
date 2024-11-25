@@ -31,8 +31,8 @@ public class MailServerApplication extends Application {
         stage.setScene(scene);
         stage.show();
 
-        ConnexionClient connexionClient = new ConnexionClient();
-        connexionClient.startServer();
+        MailServerController mailServerController = new MailServerController();
+        mailServerController.startServer();
     }
 
 
