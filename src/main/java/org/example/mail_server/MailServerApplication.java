@@ -1,19 +1,13 @@
 package org.example.mail_server;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.TextArea;
 import javafx.stage.Stage;
+import org.example.mail_server.controller.MailServerController;
 
 import java.io.*;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.Date;
-import java.util.Scanner;
-import java.util.Vector;
 
 public class MailServerApplication extends Application {
     private static final int PORT = 8189;

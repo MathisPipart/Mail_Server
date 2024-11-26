@@ -13,4 +13,6 @@ module org.example.mail_server {
 
     opens org.example.mail_server to javafx.fxml;
     exports org.example.mail_server;
+    exports org.example.mail_server.controller;
+    opens org.example.mail_server.controller to javafx.fxml;
 }
