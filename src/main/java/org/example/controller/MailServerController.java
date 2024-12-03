@@ -1,16 +1,12 @@
-package org.example.mail_server.controller;
+package org.example.controller;
 import javafx.fxml.FXML;
-import org.example.mail_server.model.Email;
-import org.example.mail_server.model.MailBox;
-import org.example.mail_server.model.User;
+import org.example.model.Email;
+import org.example.model.MailBox;
+import org.example.model.User;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -24,7 +20,7 @@ public class MailServerController {
     public void initialize() {
         user = new User("mathis.pipart@edu.unito.it");
         mailBox = new MailBox();
-        addMail();
+        //addMail();
     }
 
     public void startServer() {
@@ -70,26 +66,30 @@ public class MailServerController {
             try (ObjectInputStream inStream = new ObjectInputStream(socket.getInputStream());
                  PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
 
-                out.println("Hello! Waiting for a list of emails.");
+                // Lire l'objet envoyé par le client
+                Object receivedObject = inStream.readObject();
+                if (receivedObject instanceof Email) {
+                    Email email = (Email) receivedObject;
 
-                // Réception des emails
-                Vector<String> emailList = null;
-                try {
-                    emailList = (Vector<String>) inStream.readObject();
-                } catch (ClassNotFoundException e) {
-                    System.out.println("Error reading object: " + e.getMessage());
-                }
+                    // Traiter l'email reçu
+                    System.out.println("Received email:");
+                    System.out.println("From: " + email.getSender());
+                    System.out.println("To: " + email.getReceiver());
+                    System.out.println("Subject: " + email.getSubject());
+                    System.out.println("Content: " + email.getContent());
+                    System.out.println("Timestamp: " + email.getTimestamp());
 
-                if (emailList != null) {
-                    System.out.println("Received email list:");
-                    for (String email : emailList) {
-                        System.out.println("Email: " + email);
-                        out.println("Echo: " + email); // Répondre au client
+                    // Ajouter l'email à la boîte mail
+                    synchronized (mailBox) {
+                        mailBox.addEmail(email);
                     }
+
+                    // Répondre au client
+                    out.println("Mail received successfully.");
                 } else {
-                    out.println("No emails received.");
+                    out.println("Invalid object received.");
                 }
-            } catch (IOException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             } finally {
                 try {
@@ -102,7 +102,7 @@ public class MailServerController {
         }
     }
 
-    private void addMail() {
+    /*private void addMail() {
         mailBox.addEmail(new Email("1", "mathis.pipart@gmail.com", List.of("example1@mail.com"), "Sujet 1", "Contenu 1", LocalDateTime.now()));
         mailBox.addEmail(new Email("2", "mathis.pipart@free.fr", Arrays.asList("example2@mail.com", "exampleA@mail.com", "example7@mail.com", "exampleE@mail.com"), "Sujet 2", "Contenu 2", LocalDateTime.now()));
         mailBox.addEmail(new Email("3", "paul.zerial@edu.esiee.fr", Arrays.asList("example3@mail.com", "exampleB@mail.com", "exampleC@mail.com"), "Sujet 3", "Contenu 3", LocalDateTime.now()));
@@ -119,5 +119,5 @@ public class MailServerController {
         mailBox.addEmail(new Email("14", "antoine.roche@orange.fr", Arrays.asList("example14@mail.com", "exampleJ@mail.com"), "Sujet 14", "Contenu 14", LocalDateTime.now()));
         mailBox.addEmail(new Email("15", "claire.benoit@yahoo.com", Arrays.asList("example15@mail.com", "exampleK@mail.com", "exampleL@mail.com"), "Sujet 15", "Contenu 15", LocalDateTime.now()));
         user.setMailBox(mailBox);
-    }
+    }*/
 }

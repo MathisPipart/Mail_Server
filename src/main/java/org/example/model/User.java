@@ -1,4 +1,4 @@
-package org.example.mail_server.model;
+package org.example.model;
 
 public class User {
     private String email;

@@ -1,10 +1,10 @@
-package org.example.mail_server;
+package org.example;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import org.example.mail_server.controller.MailServerController;
+import org.example.controller.MailServerController;
 
 import java.io.*;
 

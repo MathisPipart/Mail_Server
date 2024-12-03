@@ -11,8 +11,8 @@ module org.example.mail_server {
     requires eu.hansolo.tilesfx;
     requires com.almasb.fxgl.all;
 
-    opens org.example.mail_server to javafx.fxml;
-    exports org.example.mail_server;
-    exports org.example.mail_server.controller;
-    opens org.example.mail_server.controller to javafx.fxml;
+    opens org.example to javafx.fxml;
+    exports org.example;
+    exports org.example.controller;
+    opens org.example.controller to javafx.fxml;
 }

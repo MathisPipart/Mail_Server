@@ -1,4 +1,4 @@
-package org.example.mail_server.model;
+package org.example.model;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -15,9 +15,7 @@ public class MailBox {
         return emails;
     }
 
-    public void addEmail(Email email) {
-        emails.add(email);
-    }
+    public void addEmail(Email email) { emails.add(email); }
 
     public void deleteEmail(Email email) {
         emails.remove(email);
