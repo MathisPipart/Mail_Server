@@ -1,5 +1,8 @@
 package org.example.controller;
 
+import javafx.application.Platform;
+import javafx.fxml.FXML;
+import javafx.scene.control.TextArea;
 import org.example.model.Email;
 import org.example.model.MailBox;
 
@@ -15,17 +18,20 @@ public class MailServerController {
     private final ExecutorService threadPool = Executors.newFixedThreadPool(10); // Pool de 10 threads
     private volatile boolean running = true;
 
+    @FXML
+    private TextArea logArea;
+
     // Méthode pour démarrer le serveur
     public void startServer() {
-        System.out.println("Starting the server...");
+        logMessage("Starting the server...");
         try (ServerSocket serverSocket = new ServerSocket(8189)) {
-            System.out.println("Server started, waiting for clients...");
+            logMessage("Server started, waiting for clients...");
 
             while (running) {
                 try {
                     // Accepter les connexions entrantes
                     Socket incoming = serverSocket.accept();
-                    System.out.println("Client connected.");
+                    logMessage("Client connected.");
 
                     // Confier la gestion du client à un thread
                     threadPool.execute(new ClientHandler(incoming));
@@ -74,11 +80,11 @@ public class MailServerController {
                             Email email = (Email) receivedObject;
 
                             // Traiter l'email reçu
-                            System.out.println("Received email:");
-                            System.out.println("From: " + email.getSender());
-                            System.out.println("To: " + email.getReceiver());
-                            System.out.println("Subject: " + email.getSubject());
-                            System.out.println("Content: " + email.getContent());
+                            logMessage("Received email:");
+                            logMessage("\tFrom: " + email.getSender());
+                            logMessage("\tTo: " + email.getReceiver());
+                            logMessage("\tSubject: " + email.getSubject());
+                            logMessage("\tContent: " + email.getContent());
 
                             // Ajouter l'email à la boîte mail
                             synchronized (mailBox) {
@@ -92,7 +98,7 @@ public class MailServerController {
                         }
                     } catch (EOFException | SocketException e) {
                         // Le client s'est déconnecté
-                        System.out.println("Client disconnected.");
+                        logMessage("Client disconnected.");
                         break; // Sortir de la boucle immédiatement
                     } catch (IOException | ClassNotFoundException e) {
                         e.printStackTrace();
@@ -111,5 +117,11 @@ public class MailServerController {
             }
         }
 
+    }
+
+    public void logMessage(String message) {
+        if (logArea != null) {
+            Platform.runLater(() -> logArea.appendText(message + "\n"));
+        }
     }
 }

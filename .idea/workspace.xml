@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="97a04a29-fd3c-47c7-b13c-769ab10c3022" name="Changes" comment="Send Mail Object">
+    <list default="true" id="97a04a29-fd3c-47c7-b13c-769ab10c3022" name="Changes" comment="Send Mail Object v2">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/controller/MailServerController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/controller/MailServerController.java" afterDir="false" />
     </list>
@@ -81,7 +81,7 @@
       <workItem from="1732472007220" duration="2000" />
       <workItem from="1732576205626" duration="228000" />
       <workItem from="1732617669689" duration="1398000" />
-      <workItem from="1733239030938" duration="6789000" />
+      <workItem from="1733239030938" duration="10524000" />
     </task>
     <task id="LOCAL-00001" summary="Server Connected to Client v2">
       <option name="closed" value="true" />
@@ -107,7 +107,15 @@
       <option name="project" value="LOCAL" />
       <updated>1733243948558</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Send Mail Object v2">
+      <option name="closed" value="true" />
+      <created>1733246816881</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1733246816881</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -118,6 +126,7 @@
     <MESSAGE value="Server Connected to Client v2" />
     <MESSAGE value="Server with different client" />
     <MESSAGE value="Send Mail Object" />
-    <option name="LAST_COMMIT_MESSAGE" value="Send Mail Object" />
+    <MESSAGE value="Send Mail Object v2" />
+    <option name="LAST_COMMIT_MESSAGE" value="Send Mail Object v2" />
   </component>
 </project>
