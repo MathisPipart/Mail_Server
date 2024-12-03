@@ -3,7 +3,6 @@ package org.example.mail_server;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.TextArea;
 import javafx.stage.Stage;
 import org.example.mail_server.controller.MailServerController;
 
@@ -11,7 +10,6 @@ import java.io.*;
 
 public class MailServerApplication extends Application {
     private static final int PORT = 8189;
-    private TextArea logArea; // Zone pour afficher les logs
 
     public static void main(String[] args) {
         launch();
@@ -25,9 +23,12 @@ public class MailServerApplication extends Application {
         stage.setScene(scene);
         stage.show();
 
-        MailServerController mailServerController = new MailServerController();
-        mailServerController.startServer();
+        // Récupérer le contrôleur associé à la vue FXML
+        MailServerController mailServerController = fxmlLoader.getController();
+
+        // Lancer le serveur sur un thread séparé
+        Thread serverThread = new Thread(mailServerController::startServer);
+        serverThread.setDaemon(true); // Permet de fermer ce thread lorsque l'application JavaFX se termine
+        serverThread.start();
     }
-
-
 }
