@@ -6,14 +6,14 @@ import java.util.List;
 
 public class Email implements Serializable {
     private static final long serialVersionUID = 1L;
-    private String id;
+    private int id;
     private String sender;
     private List<String> receiver;
     private String subject;
     private String content;
     private LocalDateTime timestamp;
 
-    public Email(String id, String sender, List<String>  receiver, String subject, String content, LocalDateTime timestamp) {
+    public Email(int id, String sender, List<String>  receiver, String subject, String content, LocalDateTime timestamp) {
         this.id = id;
         this.sender = sender;
         this.receiver = receiver;
@@ -23,7 +23,7 @@ public class Email implements Serializable {
     }
 
     // Getters and setters
-    public String getId() {
+    public int getId() {
         return id;
     }
 

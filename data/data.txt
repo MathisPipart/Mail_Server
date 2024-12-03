@@ -1,0 +1,14 @@
+ID: 1
+From: aa.e@t.gt
+To: [cds@a.de]
+Subject: sa
+Content: zxq
+Timestamp: 2024-12-04T00:30:49.535378100
+-------------------------------
+ID: 2
+From: de@e.fr
+To: [fr@r.gt]
+Subject: e
+Content: e
+Timestamp: 2024-12-04T00:31:28.311373700
+-------------------------------
