@@ -4,16 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="97a04a29-fd3c-47c7-b13c-769ab10c3022" name="Changes" comment="Server with different client">
+    <list default="true" id="97a04a29-fd3c-47c7-b13c-769ab10c3022" name="Changes" comment="Send Mail Object">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/module-info.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/module-info.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/mail_server/MailServerApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/MailServerApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/mail_server/controller/MailServerController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/controller/MailServerController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/mail_server/model/Email.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/model/Email.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/mail_server/model/MailBox.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/model/MailBox.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/mail_server/model/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/model/User.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/org/example/mail_server/mailServer-view.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/org/example/mailServer-view.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/controller/MailServerController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/controller/MailServerController.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -88,7 +81,7 @@
       <workItem from="1732472007220" duration="2000" />
       <workItem from="1732576205626" duration="228000" />
       <workItem from="1732617669689" duration="1398000" />
-      <workItem from="1733239030938" duration="4197000" />
+      <workItem from="1733239030938" duration="6789000" />
     </task>
     <task id="LOCAL-00001" summary="Server Connected to Client v2">
       <option name="closed" value="true" />
@@ -106,7 +99,15 @@
       <option name="project" value="LOCAL" />
       <updated>1733241346176</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Send Mail Object">
+      <option name="closed" value="true" />
+      <created>1733243948558</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1733243948558</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -116,6 +117,7 @@
     <MESSAGE value="Server Connected to Client" />
     <MESSAGE value="Server Connected to Client v2" />
     <MESSAGE value="Server with different client" />
-    <option name="LAST_COMMIT_MESSAGE" value="Server with different client" />
+    <MESSAGE value="Send Mail Object" />
+    <option name="LAST_COMMIT_MESSAGE" value="Send Mail Object" />
   </component>
 </project>
