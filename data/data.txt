@@ -1,14 +1,5 @@
-ID: 1
-From: aa.e@t.gt
-To: [cds@a.de]
-Subject: sa
-Content: zxq
-Timestamp: 2024-12-04T00:30:49.535378100
--------------------------------
-ID: 2
-From: de@e.fr
-To: [fr@r.gt]
-Subject: e
-Content: e
-Timestamp: 2024-12-04T00:31:28.311373700
--------------------------------
+1;mathis.pipart@gmail.com;mathis.pipart@free.fr;fr;fr;2024-12-04T10:24:10.502554900
+2;mathis.pipart@gmail.com;mathis.pipart@free.fr;r;r;2024-12-04T10:24:33.957000600
+3;mathis.pipart@free.fr;mathis.pipart@gmail.com;a;a;2024-12-04T10:25:15.110413300
+1;mathis.pipart@gmail.com;mathis.pipart@gmail.com;a;a;2024-12-04T10:33:27.475037900
+4;mathis.pipart@gmail.com;mathis.pipart@gmail.com;RE: a;d;2024-12-04T10:41:29.394497200
