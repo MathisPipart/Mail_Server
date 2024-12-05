@@ -1,6 +1,10 @@
 package org.example.model;
 
-public class User {
+import java.io.Serializable;
+
+public class User implements Serializable {
+    private static final long serialVersionUID = 1L; // Recommandé pour la compatibilité
+
     private String email;
     private MailBox mailBox;
 
@@ -25,4 +29,3 @@ public class User {
         this.mailBox = mailBox;
     }
 }
-

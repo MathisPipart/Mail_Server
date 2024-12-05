@@ -1,5 +1,5 @@
-1;mathis.pipart@gmail.com;mathis.pipart@free.fr;fr;fr;2024-12-04T10:24:10.502554900
-2;mathis.pipart@gmail.com;mathis.pipart@free.fr;r;r;2024-12-04T10:24:33.957000600
-3;mathis.pipart@free.fr;mathis.pipart@gmail.com;a;a;2024-12-04T10:25:15.110413300
-1;mathis.pipart@gmail.com;mathis.pipart@gmail.com;a;a;2024-12-04T10:33:27.475037900
-4;mathis.pipart@gmail.com;mathis.pipart@gmail.com;RE: a;d;2024-12-04T10:41:29.394497200
+mathis.pipart@free.fr;0,mathis.pipart@gmail.com,mathis.pipart@free.fr,a,a,2024-12-05T13:01:11.957203500|
+mathis.pipart@gmail.com;1,mathis.pipart@gmail.com,mathis.pipart@gmail.com,a,a,2024-12-05T13:01:31.714855300|2,mathis.pipart@gmail.com,mathis.pipart@gmail.com,a,a,2024-12-05T13:02:05.196391|
+azerty.e@fr.fr;3,mathis.pipart@gmail.com,azerty.e@fr.fr,adea,aaeda,2024-12-05T13:04:10.604558100|
+cd@d.fr;3,mathis.pipart@gmail.com,cd@d.fr,d,d,2024-12-05T13:07:04.329866600|
+a@r.fr;0,a@r.fr,a@r.fr,e,e,2024-12-05T13:08:06.890062|

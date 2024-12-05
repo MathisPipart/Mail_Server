@@ -4,105 +4,135 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
 import org.example.model.Email;
-import org.example.model.MailBox;
+import org.example.model.User;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.time.LocalDateTime;
-import java.util.Arrays;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class MailServerController {
-    private final MailBox mailBox = new MailBox();
-    private final ExecutorService threadPool = Executors.newFixedThreadPool(10); // Pool de 10 threads
+    private final Map<String, User> users = new HashMap<>();
+    private final Map<String, Integer> emailCounters = new HashMap<>(); // ID unique pour chaque utilisateur
+    private final ExecutorService threadPool = Executors.newFixedThreadPool(10);
     private volatile boolean running = true;
-    private static final AtomicInteger emailCounter = new AtomicInteger(0); // Compteur global pour IDs uniques
 
     @FXML
     private TextArea logArea;
 
-    // Méthode pour démarrer le serveur
     public void startServer() {
         logMessage("Starting the server...");
-
-        // Charger les emails depuis le fichier
-        loadEmailsFromFile();
+        loadUsersFromFile();
 
         try (ServerSocket serverSocket = new ServerSocket(8189)) {
-            logMessage("Server started, waiting for clients...");
+            logMessage("Server started. Waiting for clients...");
             while (running) {
-                try {
-                    Socket incoming = serverSocket.accept();
-                    logMessage("Client connected.");
-                    threadPool.execute(new ClientHandler(incoming));
-                } catch (IOException e) {
-                    if (running) {
-                        logMessage("Error accepting client connection: " + e.getMessage());
-                    }
-                }
+                Socket clientSocket = serverSocket.accept();
+                logMessage("Client connected.");
+                threadPool.execute(new ClientHandler(clientSocket));
             }
         } catch (IOException e) {
-            logMessage("Error starting server: " + e.getMessage());
+            logMessage("Server error: " + e.getMessage());
         } finally {
             stopServer();
         }
     }
 
-
-    private void loadEmailsFromFile() {
+    private void loadUsersFromFile() {
         File file = getWritableDataFile();
-
         if (!file.exists()) {
             logMessage("data.txt does not exist. Starting fresh.");
             return;
         }
 
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            int maxId = 0;
-
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.trim().isEmpty()) continue;
 
                 String[] parts = line.split(";");
-                if (parts.length != 6) {
-                    logMessage("Invalid line in data.txt: " + line);
-                    continue;
+                String email = parts[0];
+                User user = new User(email);
+
+                if (parts.length > 1) {
+                    String[] emailParts = parts[1].split("\\|");
+                    for (String emailData : emailParts) {
+                        String[] emailFields = emailData.split(",");
+                        if (emailFields.length == 6) {
+                            Email emailObj = new Email(
+                                    Integer.parseInt(emailFields[0]),
+                                    emailFields[1],
+                                    Arrays.asList(emailFields[2].split(";")),
+                                    emailFields[3],
+                                    emailFields[4],
+                                    LocalDateTime.parse(emailFields[5])
+                            );
+                            user.getMailBox().addEmail(emailObj);
+                            emailCounters.put(email, Math.max(emailCounters.getOrDefault(email, 0), emailObj.getId()) + 1);
+                        }
+                    }
                 }
 
-                // Construire l'email
-                Email email = new Email(
-                        Integer.parseInt(parts[0]), // ID
-                        parts[1],                   // Expéditeur
-                        Arrays.asList(parts[2].split(",")), // Destinataires
-                        parts[3],                   // Sujet
-                        parts[4],                   // Contenu
-                        LocalDateTime.parse(parts[5]) // Timestamp
-                );
-
-                // Ajouter l'email à la boîte mail
-                synchronized (mailBox) {
-                    mailBox.addEmail(email);
-                }
-
-                // Mettre à jour le maximum d'ID
-                maxId = Math.max(maxId, email.getId());
+                users.put(email, user);
             }
-
-            // Initialiser le compteur d'ID
-            emailCounter.set(maxId);
-            logMessage("Emails loaded from data.txt. Max ID: " + maxId);
         } catch (IOException e) {
             logMessage("Error reading data.txt: " + e.getMessage());
         }
     }
 
+    private File getWritableDataFile() {
+        File directory = new File("data");
+        if (!directory.exists()) {
+            directory.mkdir();
+        }
+        return new File(directory, "data.txt");
+    }
 
-    // Méthode pour arrêter le serveur
+    private synchronized void addEmailToFile(String userEmail, Email email) throws IOException {
+        File file = getWritableDataFile();
+        List<String> lines = new ArrayList<>();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            boolean updated = false;
+
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith(userEmail + ";")) {
+                    updated = true;
+                    if (email != null) {
+                        line = line + serializeEmail(email) + "|"; // Ajouter l'email si non null
+                    }
+                }
+                lines.add(line);
+            }
+
+            if (!updated) {
+                // Créer une nouvelle ligne pour l'utilisateur s'il n'existe pas déjà
+                lines.add(userEmail + (email != null ? ";" + serializeEmail(email) + "|" : ";"));
+            }
+        }
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, false))) {
+            for (String updatedLine : lines) {
+                writer.write(updatedLine);
+                writer.newLine();
+            }
+        }
+    }
+
+
+    private String serializeEmail(Email email) {
+        return email.getId() + "," +
+                email.getSender() + "," +
+                String.join(";", email.getReceiver()) + "," +
+                email.getSubject() + "," +
+                email.getContent() + "," +
+                email.getTimestamp();
+    }
+
     public void stopServer() {
         running = false;
         logMessage("Stopping the server...");
@@ -124,105 +154,128 @@ public class MailServerController {
                 out.println("Welcome to the Mail Server!");
 
                 while (!socket.isClosed()) {
+                    Object receivedObject = inStream.readObject();
+
+                    if (receivedObject instanceof Email) {
+                        handleEmail((Email) receivedObject, out);
+                    } else if (receivedObject instanceof String) {
+                        handleCommand((String) receivedObject, out);
+                    } else if (receivedObject instanceof User) {
+                        handleUser((User) receivedObject, out);
+                    } else {
+                        out.println("Invalid object received.");
+                        System.err.println("Invalid object received: " + receivedObject);
+                    }
+                }
+            } catch (IOException | ClassNotFoundException e) {
+                logMessage("Error handling client: " + e.getMessage());
+            }
+        }
+
+
+        private void handleUser(User user, PrintWriter out) {
+            String email = user.getEmail();
+
+            synchronized (users) {
+                if (!users.containsKey(email)) {
+                    users.put(email, user);
+
                     try {
-                        Object receivedObject = inStream.readObject();
-
-                        if (receivedObject instanceof Email) {
-                            handleEmail((Email) receivedObject, out);
-                        } else if (receivedObject instanceof String && ((String) receivedObject).startsWith("RETRIEVE_MAILS:")) {
-                            handleRetrieveMails((String) receivedObject, out);
-                        } else {
-                            out.println("Invalid object received.");
-                        }
-                    } catch (EOFException | SocketException e) {
-                        logMessage("Client disconnected.");
-                        break;
-                    } catch (IOException | ClassNotFoundException e) {
-                        logMessage("Error handling client: " + e.getMessage());
+                        addEmailToFile(email, null); // Ajouter l'utilisateur au fichier
+                        out.println("User registered successfully.");
+                        logMessage("User registered: " + email);
+                    } catch (IOException e) {
+                        logMessage("Error registering user: " + e.getMessage());
+                        out.println("Error registering user.");
                     }
+                } else {
+                    out.println("User already exists.");
+                    logMessage("User already exists: " + email);
                 }
-            } catch (IOException e) {
-                logMessage("Error in client handler: " + e.getMessage());
-            } finally {
+            }
+        }
+
+
+        private void handleEmail(Email email, PrintWriter out) {
+            // Générer un ID unique pour cet email
+            String senderEmail = email.getSender();
+            int newId = emailCounters.getOrDefault(senderEmail, 0);
+            email.setId(newId);
+            emailCounters.put(senderEmail, newId + 1);
+
+            boolean success = true;
+
+            for (String receiver : email.getReceiver()) {
+                User user = users.computeIfAbsent(receiver, User::new);
+                user.getMailBox().addEmail(email);
+
                 try {
-                    if (!socket.isClosed()) {
-                        socket.close();
+                    addEmailToFile(receiver, email); // Ajouter au fichier
+                } catch (Exception e) {
+                    logMessage("Error adding email to file: " + e.getMessage());
+                    success = false; // Marquer comme échoué si une écriture échoue
+                }
+            }
+
+            if (success) {
+                out.println("Mail received successfully with ID: " + email.getId());
+            } else {
+                out.println("Error processing email.");
+            }
+        }
+
+
+        private void handleCommand(String command, PrintWriter out) {
+            if (command.startsWith("RETRIEVE_MAILS:")) {
+                handleRetrieveMails(command, out);
+            } else if (command.startsWith("REGISTER_USER:")) {
+                handleRegisterUser(command, out);
+            } else {
+                out.println("Unknown command.");
+            }
+        }
+
+        private void handleRetrieveMails(String command, PrintWriter out) {
+            String userEmail = command.replace("RETRIEVE_MAILS:", "").trim();
+
+            User user = users.computeIfAbsent(userEmail, User::new);
+
+            synchronized (user.getMailBox()) {
+                if (user.getMailBox().getEmails().isEmpty()) {
+                    out.println("Mail:"); // Aucun email
+                } else {
+                    for (Email email : user.getMailBox().getEmails()) {
+                        out.println("Mail:" + serializeEmail(email));
                     }
+                }
+            }
+
+            out.println("END_OF_MAILS"); // Fin de l'envoi
+        }
+
+
+        private void handleRegisterUser(String command, PrintWriter out) {
+            String userEmail = command.replace("REGISTER_USER:", "").trim();
+            if (!users.containsKey(userEmail)) {
+                User newUser = new User(userEmail);
+                users.put(userEmail, newUser);
+
+                try {
+                    // Ajouter l'utilisateur dans le fichier
+                    addEmailToFile(userEmail, null);
+                    out.println("User registered successfully.");
                 } catch (IOException e) {
-                    logMessage("Error closing client socket: " + e.getMessage());
+                    logMessage("Error adding user to file: " + e.getMessage());
+                    out.println("Error registering user.");
                 }
+            } else {
+                out.println("User already exists.");
             }
         }
+
     }
 
-    // Gérer un email reçu
-    private void handleEmail(Email email, PrintWriter out) {
-        int generatedId = emailCounter.incrementAndGet();
-        email = new Email(
-                generatedId,
-                email.getSender(),
-                email.getReceiver(),
-                email.getSubject(),
-                email.getContent(),
-                email.getTimestamp() != null ? email.getTimestamp() : LocalDateTime.now()
-        );
-
-        synchronized (mailBox) {
-            mailBox.addEmail(email);
-        }
-
-        writeEmailToFile(email);
-
-        out.println("Mail received successfully with ID: " + generatedId);
-        logMessage("Email with ID " + generatedId + " successfully handled.");
-    }
-
-    // Gérer la récupération des emails
-    private void handleRetrieveMails(String command, PrintWriter out) {
-        String userEmail = command.replace("RETRIEVE_MAILS:", "").trim();
-
-        synchronized (mailBox) {
-            for (Email email : mailBox.getEmails()) {
-                if (email.getReceiver().contains(userEmail)) {
-                    out.println(serializeEmail(email));
-                }
-            }
-        }
-        out.println("END_OF_MAILS");
-    }
-
-
-    private String serializeEmail(Email email) {
-        return email.getId() + ";" +
-                email.getSender() + ";" +
-                String.join(",", email.getReceiver()) + ";" +
-                email.getSubject() + ";" +
-                email.getContent() + ";" +
-                email.getTimestamp();
-    }
-
-    private File getWritableDataFile() {
-        String targetDir = "data";
-        File directory = new File(targetDir);
-        if (!directory.exists()) {
-            directory.mkdir();
-        }
-
-        return new File(directory, "data.txt");
-    }
-
-    private void writeEmailToFile(Email email) {
-        File file = getWritableDataFile();
-
-        try (FileWriter writer = new FileWriter(file, true)) {
-            writer.write(serializeEmail(email) + "\n");
-            logMessage("Email written to data.txt with ID: " + email.getId());
-        } catch (IOException e) {
-            logMessage("Error writing to data.txt: " + e.getMessage());
-        }
-    }
-
-    public void logMessage(String message) {
+    private void logMessage(String message) {
         if (logArea != null) {
             Platform.runLater(() -> logArea.appendText(message + "\n"));
         }
