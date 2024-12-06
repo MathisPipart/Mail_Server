@@ -230,10 +230,89 @@ public class MailServerController {
                 handleRetrieveMails(command, out);
             } else if (command.startsWith("REGISTER_USER:")) {
                 handleRegisterUser(command, out);
+            } else if (command.startsWith("DELETE_MAIL:")) {
+                handleDeleteMail(command, out);
             } else {
                 out.println("Unknown command.");
             }
         }
+
+        private void handleDeleteMail(String command, PrintWriter out) {
+            String[] parts = command.replace("DELETE_MAIL:", "").trim().split(",");
+            if (parts.length < 2) {
+                out.println("Error: Invalid DELETE_MAIL command format.");
+                return;
+            }
+
+            String userEmail = parts[0];
+            int emailId;
+
+            try {
+                emailId = Integer.parseInt(parts[1]);
+            } catch (NumberFormatException e) {
+                out.println("Error: Invalid email ID.");
+                return;
+            }
+
+            User user = users.get(userEmail);
+            if (user == null) {
+                out.println("Error: User not found.");
+                return;
+            }
+
+            synchronized (user.getMailBox()) {
+                List<Email> emails = user.getMailBox().getEmails();
+                Email emailToDelete = null;
+
+                for (Email email : emails) {
+                    if (email.getId() == emailId) {
+                        emailToDelete = email;
+                        break;
+                    }
+                }
+
+                if (emailToDelete != null) {
+                    emails.remove(emailToDelete);
+                    try {
+                        updateEmailFile(userEmail, emails); // Met à jour `data.txt`
+                        out.println("Mail deleted successfully.");
+                    } catch (IOException e) {
+                        out.println("Error: Unable to update file.");
+                        logMessage("Error updating file after deleting mail: " + e.getMessage());
+                    }
+                } else {
+                    out.println("Error: Mail not found.");
+                }
+            }
+        }
+
+        private synchronized void updateEmailFile(String userEmail, List<Email> emails) throws IOException {
+            File file = getWritableDataFile();
+            List<String> lines = new ArrayList<>();
+
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (line.startsWith(userEmail + ";")) {
+                        StringBuilder newLine = new StringBuilder(userEmail + ";");
+                        for (Email email : emails) {
+                            newLine.append(serializeEmail(email)).append("|");
+                        }
+                        lines.add(newLine.toString());
+                    } else {
+                        lines.add(line);
+                    }
+                }
+            }
+
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, false))) {
+                for (String updatedLine : lines) {
+                    writer.write(updatedLine);
+                    writer.newLine();
+                }
+            }
+        }
+
 
         private void handleRetrieveMails(String command, PrintWriter out) {
             String userEmail = command.replace("RETRIEVE_MAILS:", "").trim();

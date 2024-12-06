@@ -6,11 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="97a04a29-fd3c-47c7-b13c-769ab10c3022" name="Changes" comment="Write Email in .txt file">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/data.txt" beforeDir="false" afterPath="$PROJECT_DIR$/data/data.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/controller/MailServerController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/controller/MailServerController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/model/Email.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/model/Email.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/model/MailBox.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/model/MailBox.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/model/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/model/User.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
