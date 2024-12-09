@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="97a04a29-fd3c-47c7-b13c-769ab10c3022" name="Changes" comment="delete email via server">
+    <list default="true" id="97a04a29-fd3c-47c7-b13c-769ab10c3022" name="Changes" comment="server checks that the mail exists">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/data/data.txt" beforeDir="false" afterPath="$PROJECT_DIR$/data/data.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/controller/MailServerController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/controller/MailServerController.java" afterDir="false" />
@@ -89,7 +89,7 @@
       <workItem from="1732617669689" duration="1398000" />
       <workItem from="1733239030938" duration="16995000" />
       <workItem from="1733563672046" duration="56000" />
-      <workItem from="1733733781468" duration="3685000" />
+      <workItem from="1733733781468" duration="5421000" />
     </task>
     <task id="LOCAL-00001" summary="Server Connected to Client v2">
       <option name="closed" value="true" />
@@ -147,7 +147,15 @@
       <option name="project" value="LOCAL" />
       <updated>1733522926065</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="server checks that the mail exists">
+      <option name="closed" value="true" />
+      <created>1733738846244</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1733738846244</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -162,6 +170,7 @@
     <MESSAGE value="write in textArea" />
     <MESSAGE value="Write Email in .txt file" />
     <MESSAGE value="delete email via server" />
-    <option name="LAST_COMMIT_MESSAGE" value="delete email via server" />
+    <MESSAGE value="server checks that the mail exists" />
+    <option name="LAST_COMMIT_MESSAGE" value="server checks that the mail exists" />
   </component>
 </project>

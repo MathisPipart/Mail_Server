@@ -125,13 +125,14 @@ public class MailServerController {
 
 
     private String serializeEmail(Email email) {
-        return email.getId() + "," +
-                email.getSender() + "," +
-                String.join(";", email.getReceiver()) + "," +
-                email.getSubject() + "," +
-                email.getContent() + "," +
+        return email.getId() + "|" +
+                email.getSender() + "|" +
+                String.join(";", email.getReceiver()) + "|" +
+                email.getSubject() + "|" +
+                email.getContent().replaceAll("\n", "\\\\n") + "|" +
                 email.getTimestamp();
     }
+
 
     public void stopServer() {
         running = false;
