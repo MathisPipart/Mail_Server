@@ -178,22 +178,17 @@ public class MailServerController {
 
             synchronized (users) {
                 if (!users.containsKey(email)) {
-                    users.put(email, user);
-
-                    try {
-                        addEmailToFile(email, null); // Ajouter l'utilisateur au fichier
-                        out.println("User registered successfully.");
-                        logMessage("User registered: " + email);
-                    } catch (IOException e) {
-                        logMessage("Error registering user: " + e.getMessage());
-                        out.println("Error registering user.");
-                    }
+                    // Au lieu de créer un nouvel utilisateur, on envoie un message d'erreur
+                    out.println("Error: User does not exist.");
+                    logMessage("Connection attempt with non-existent user: " + email);
                 } else {
-                    out.println("User already exists.");
-                    logMessage("User already exists: " + email);
+                    // Si l'utilisateur existe, on le considère comme "connecté"
+                    out.println("User connected successfully.");
+                    logMessage("User connected: " + email);
                 }
             }
         }
+
 
 
         private void handleEmail(Email email, PrintWriter out) {
@@ -232,10 +227,24 @@ public class MailServerController {
                 handleRegisterUser(command, out);
             } else if (command.startsWith("DELETE_MAIL:")) {
                 handleDeleteMail(command, out);
+            } else if (command.startsWith("CHECK_USER:")) {
+                handleCheckUser(command, out);
             } else {
                 out.println("Unknown command.");
             }
         }
+
+        private void handleCheckUser(String command, PrintWriter out) {
+            String userEmail = command.replace("CHECK_USER:", "").trim();
+            synchronized (users) {
+                if (users.containsKey(userEmail)) {
+                    out.println("User exists");
+                } else {
+                    out.println("Error: User does not exist.");
+                }
+            }
+        }
+
 
         private void handleDeleteMail(String command, PrintWriter out) {
             String[] parts = command.replace("DELETE_MAIL:", "").trim().split(",");
