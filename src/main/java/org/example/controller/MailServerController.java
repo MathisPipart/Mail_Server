@@ -165,10 +165,17 @@ public class MailServerController {
                 while (!socket.isClosed()) {
                     Object receivedObject = inStream.readObject();
 
-                    if (receivedObject instanceof Email) {
+                    if (receivedObject instanceof String) {
+                        String disconnectText = (String) receivedObject;
+                        if (disconnectText.equals("DISCONNECT")) {
+                            handleDisconnect();
+                            break;
+                        } else {
+                            handleCommand((String) receivedObject, out);
+                        }
+                    }
+                    else if (receivedObject instanceof Email) {
                         handleEmail((Email) receivedObject, out);
-                    } else if (receivedObject instanceof String) {
-                        handleCommand((String) receivedObject, out);
                     } else if (receivedObject instanceof User) {
                         handleUser((User) receivedObject, out);
                     } else {
@@ -229,7 +236,9 @@ public class MailServerController {
 
 
         private void handleCommand(String command, PrintWriter out) {
-            if (command.startsWith("RETRIEVE_MAILS:")) {
+            if (command.startsWith("DISCONNECT")) {
+                handleDisconnect();
+            } else if (command.startsWith("RETRIEVE_MAILS:")) {
                 handleRetrieveMails(command, out);
             } else if (command.startsWith("DELETE_MAIL:")) {
                 handleDeleteMail(command, out);
@@ -355,6 +364,20 @@ public class MailServerController {
 
             out.println("END_OF_MAILS");
         }
+
+        private void handleDisconnect() {
+            try {
+                logMessage("Client disconnected: " + socket.getInetAddress());
+                if (!socket.isClosed()) {
+                    socket.close();
+                }
+            } catch (IOException e) {
+                logMessage("Error while disconnecting client: " + e.getMessage());
+            }
+        }
+
+
+
 
 
     }
