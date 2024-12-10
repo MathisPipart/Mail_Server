@@ -53,35 +53,42 @@ public class MailServerController {
             while ((line = reader.readLine()) != null) {
                 if (line.trim().isEmpty()) continue;
 
-                String[] parts = line.split(";");
-                String email = parts[0];
-                User user = new User(email);
+                // Séparer l'email utilisateur de la liste d'emails
+                String[] parts = line.split(";", 2); // "email_utilisateur;emails"
+                String userEmail = parts[0];
+                User user = new User(userEmail);
 
                 if (parts.length > 1) {
+                    // Emails séparés par "|"
                     String[] emailParts = parts[1].split("\\|");
-                    for (String emailData : emailParts) {
-                        String[] emailFields = emailData.split(",");
-                        if (emailFields.length == 6) {
-                            Email emailObj = new Email(
-                                    Integer.parseInt(emailFields[0]),
-                                    emailFields[1],
-                                    Arrays.asList(emailFields[2].split(";")),
-                                    emailFields[3],
-                                    emailFields[4],
-                                    LocalDateTime.parse(emailFields[5])
-                            );
-                            user.getMailBox().addEmail(emailObj);
-                            emailCounters.put(email, Math.max(emailCounters.getOrDefault(email, 0), emailObj.getId()) + 1);
+                    for (int i = 0; i < emailParts.length; i += 6) {
+                        try {
+                            if (i + 5 < emailParts.length) { // Vérifie qu'il y a assez de champs pour un email
+                                Email emailObj = new Email(
+                                        Integer.parseInt(emailParts[i]), // ID
+                                        emailParts[i + 1], // Expéditeur
+                                        Arrays.asList(emailParts[i + 2].split(";")), // Liste des destinataires
+                                        emailParts[i + 3], // Sujet
+                                        emailParts[i + 4].replace("\\n", "\n"), // Contenu
+                                        LocalDateTime.parse(emailParts[i + 5]) // Timestamp
+                                );
+                                user.getMailBox().addEmail(emailObj);
+                            } else {
+                                logMessage("Invalid email format for user: " + userEmail);
+                            }
+                        } catch (Exception e) {
+                            logMessage("Error processing email for user " + userEmail + ": " + e.getMessage());
                         }
                     }
                 }
 
-                users.put(email, user);
+                users.put(userEmail, user);
             }
         } catch (IOException e) {
             logMessage("Error reading data.txt: " + e.getMessage());
         }
     }
+
 
     private File getWritableDataFile() {
         File directory = new File("data");
@@ -111,7 +118,7 @@ public class MailServerController {
 
             if (!updated) {
                 // Créer une nouvelle ligne pour l'utilisateur s'il n'existe pas déjà
-                lines.add(userEmail + (email != null ? ";" + serializeEmail(email) + "|" : ";"));
+                //lines.add(userEmail + (email != null ? ";" + serializeEmail(email) + "|" : ";"));
             }
         }
 
@@ -129,9 +136,10 @@ public class MailServerController {
                 email.getSender() + "|" +
                 String.join(";", email.getReceiver()) + "|" +
                 email.getSubject() + "|" +
-                email.getContent().replaceAll("\n", "\\\\n") + "|" +
+                email.getContent().replace("\n", "\\n") + "|" +
                 email.getTimestamp();
     }
+
 
 
     public void stopServer() {
@@ -191,7 +199,6 @@ public class MailServerController {
         }
 
 
-
         private void handleEmail(Email email, PrintWriter out) {
             // Générer un ID unique pour cet email
             String senderEmail = email.getSender();
@@ -224,8 +231,6 @@ public class MailServerController {
         private void handleCommand(String command, PrintWriter out) {
             if (command.startsWith("RETRIEVE_MAILS:")) {
                 handleRetrieveMails(command, out);
-            } else if (command.startsWith("REGISTER_USER:")) {
-                handleRegisterUser(command, out);
             } else if (command.startsWith("DELETE_MAIL:")) {
                 handleDeleteMail(command, out);
             } else if (command.startsWith("CHECK_USER:")) {
@@ -235,13 +240,16 @@ public class MailServerController {
             }
         }
 
+
         private void handleCheckUser(String command, PrintWriter out) {
             String userEmail = command.replace("CHECK_USER:", "").trim();
             synchronized (users) {
                 if (users.containsKey(userEmail)) {
                     out.println("User exists");
+                    logMessage("User exists: " + userEmail);
                 } else {
                     out.println("Error: User does not exist.");
+                    logMessage("User does not exist: " + userEmail);
                 }
             }
         }
@@ -296,6 +304,7 @@ public class MailServerController {
             }
         }
 
+
         private synchronized void updateEmailFile(String userEmail, List<Email> emails) throws IOException {
             File file = getWritableDataFile();
             List<String> lines = new ArrayList<>();
@@ -327,40 +336,26 @@ public class MailServerController {
         private void handleRetrieveMails(String command, PrintWriter out) {
             String userEmail = command.replace("RETRIEVE_MAILS:", "").trim();
 
-            User user = users.computeIfAbsent(userEmail, User::new);
+            User user = users.get(userEmail);
+            if (user == null) {
+                out.println("Error: User not found.");
+                return;
+            }
 
             synchronized (user.getMailBox()) {
                 if (user.getMailBox().getEmails().isEmpty()) {
-                    out.println("Mail:"); // Aucun email
+                    out.println("No emails found.");
                 } else {
                     for (Email email : user.getMailBox().getEmails()) {
-                        out.println("Mail:" + serializeEmail(email));
+                        String serializedEmail = serializeEmail(email);
+                        out.println("Mail:" + serializedEmail);
                     }
                 }
             }
 
-            out.println("END_OF_MAILS"); // Fin de l'envoi
+            out.println("END_OF_MAILS");
         }
 
-
-        private void handleRegisterUser(String command, PrintWriter out) {
-            String userEmail = command.replace("REGISTER_USER:", "").trim();
-            if (!users.containsKey(userEmail)) {
-                User newUser = new User(userEmail);
-                users.put(userEmail, newUser);
-
-                try {
-                    // Ajouter l'utilisateur dans le fichier
-                    addEmailToFile(userEmail, null);
-                    out.println("User registered successfully.");
-                } catch (IOException e) {
-                    logMessage("Error adding user to file: " + e.getMessage());
-                    out.println("Error registering user.");
-                }
-            } else {
-                out.println("User already exists.");
-            }
-        }
 
     }
 

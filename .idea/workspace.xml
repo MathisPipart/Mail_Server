@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="97a04a29-fd3c-47c7-b13c-769ab10c3022" name="Changes" comment="server checks that the mail exists">
+    <list default="true" id="97a04a29-fd3c-47c7-b13c-769ab10c3022" name="Changes" comment="content on several lines">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/data/data.txt" beforeDir="false" afterPath="$PROJECT_DIR$/data/data.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/controller/MailServerController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/controller/MailServerController.java" afterDir="false" />
@@ -90,6 +90,8 @@
       <workItem from="1733239030938" duration="16995000" />
       <workItem from="1733563672046" duration="56000" />
       <workItem from="1733733781468" duration="5421000" />
+      <workItem from="1733742921771" duration="62000" />
+      <workItem from="1733821779964" duration="6638000" />
     </task>
     <task id="LOCAL-00001" summary="Server Connected to Client v2">
       <option name="closed" value="true" />
