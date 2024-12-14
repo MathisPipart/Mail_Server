@@ -50,6 +50,15 @@ public class Email implements Serializable {
     public void setId(int id) {
         this.id = id;
     }
+
+    public String toString() {
+        return this.getId() + ";" +
+            this.getSender() + ";" +
+            String.join("|", this.getReceiver()) + ";" +
+            this.getSubject() + ";" +
+            this.getContent().replace("\n", "\\n") + ";" +
+            this.getTimestamp();
+        }
 }
 
 

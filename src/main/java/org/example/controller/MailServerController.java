@@ -16,7 +16,7 @@ import java.util.concurrent.Executors;
 
 public class MailServerController {
     private final Map<String, User> users = new HashMap<>();
-    private final Map<String, Integer> emailCounters = new HashMap<>(); // ID unique pour chaque utilisateur
+    private int emailCount = 0; // ID unique pour chaque utilisateur
     private final ExecutorService threadPool = Executors.newFixedThreadPool(10);
     private volatile boolean running = true;
     private final Map<Socket, User> activeUsers  = new HashMap<>();
@@ -28,6 +28,7 @@ public class MailServerController {
     public void startServer() {
         logMessage("Starting the server...");
         loadUsersFromFile();
+        loadEmailsFromFile();
 
         try (ServerSocket serverSocket = new ServerSocket(8189)) {
             logMessage("Server started. Waiting for clients...");
@@ -44,9 +45,9 @@ public class MailServerController {
     }
 
     private void loadUsersFromFile() {
-        File file = getWritableDataFile();
+        File file = getWritableUsersDataFile();
         if (!file.exists()) {
-            logMessage("data.txt does not exist. Starting fresh.");
+            logMessage("User file does not exist. Starting fresh.");
             return;
         }
 
@@ -55,96 +56,91 @@ public class MailServerController {
             while ((line = reader.readLine()) != null) {
                 if (line.trim().isEmpty()) continue;
 
-                // Séparer l'email utilisateur de la liste d'emails
-                String[] parts = line.split(";", 2); // "email_utilisateur;emails"
-                String userEmail = parts[0];
-                User user = new User(userEmail);
+                User user = new User(line);
 
-                // Vérifier si la partie des emails existe
-                if (parts.length > 1 && !parts[1].trim().isEmpty()) {
-                    // Emails séparés par "|"
-                    String[] emailParts = parts[1].split("\\|");
-                    for (int i = 0; i < emailParts.length; i += 6) {
-                        try {
-                            if (i + 5 < emailParts.length) { // Vérifie qu'il y a assez de champs pour un email
-                                Email emailObj = new Email(
-                                        Integer.parseInt(emailParts[i]), // ID
-                                        emailParts[i + 1], // Expéditeur
-                                        Arrays.asList(emailParts[i + 2].split(";")), // Liste des destinataires
-                                        emailParts[i + 3], // Sujet
-                                        emailParts[i + 4].replace("\\n", "\n"), // Contenu
-                                        LocalDateTime.parse(emailParts[i + 5]) // Timestamp
-                                );
-                                user.getMailBox().addEmail(emailObj);
-                            } else {
-                                logMessage("Invalid email format for user: " + userEmail);
-                            }
-                        } catch (Exception e) {
-                            logMessage("Error processing email for user " + userEmail + ": " + e.getMessage());
-                        }
-                    }
-                }
-
-                // Ajouter l'utilisateur à la liste
-                users.put(userEmail, user);
+                users.put(line, user);
             }
         } catch (IOException e) {
             logMessage("Error reading data.txt: " + e.getMessage());
         }
     }
 
+    private void loadEmailsFromFile() {
+        File file = getWritableEmailsDataFile();
+        if (!file.exists()) {
+            logMessage("Emails file does not exist. Starting fresh.");
+            return;
+        }
 
-    private File getWritableDataFile() {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.trim().isEmpty()) continue;
+
+
+                String[] emailParts = line.split(";");
+                if (emailParts.length != 6) {
+                    logMessage("Error processing email line : " + line);
+                }
+
+                Email emailObj = new Email(
+                    Integer.parseInt(emailParts[0]), // ID
+                    emailParts[1], // Expéditeur
+                    Arrays.asList(emailParts[2].split("\\|")), // Liste des destinataires
+                    emailParts[3], // Sujet
+                    emailParts[4].replace("\\n", "\n"), // Contenu
+                    LocalDateTime.parse(emailParts[5]) // Timestamp
+                );
+
+                // For each receiver in a email, add to their list
+                emailObj.getReceiver().forEach(receiver -> {
+                    final User user = this.users.get(receiver);
+                    user.getMailBox().addEmail(emailObj);
+
+                    // increment email count
+                    emailCount++;
+                });
+            }
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+    private File getWritableUsersDataFile() {
         File directory = new File("data");
         if (!directory.exists()) {
             directory.mkdir();
         }
-        return new File(directory, "data.txt");
+        return new File(directory, "users.txt");
     }
+
+    private File getWritableEmailsDataFile() {
+        File directory = new File("data");
+        if (!directory.exists()) {
+            directory.mkdir();
+        }
+        return new File(directory, "emails.txt");
+    }
+
 
     private synchronized void addEmailToFile(String userEmail, Email email) throws IOException {
-        File file = getWritableDataFile();
-        List<String> lines = new ArrayList<>();
+        File emailsFile = getWritableEmailsDataFile();
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line;
-            boolean updated = false;
-
-            while ((line = reader.readLine()) != null) {
-                if (line.startsWith(userEmail + ";")) {
-                    updated = true;
-                    if (email != null) {
-                        line = line + serializeEmail(email) + "|"; // Ajouter l'email si non null
-                    }
-                }
-                lines.add(line);
+        // For each receiver emails, if not in user list, create it
+        email.getReceiver().forEach(receiver -> {
+            if (!users.containsKey(receiver)) {
+                final User newUser = new User(receiver);
+                users.put(receiver, newUser);
             }
+        });
 
-            if (!updated) {
-                // Créer une nouvelle ligne pour l'utilisateur s'il n'existe pas déjà
-                //lines.add(userEmail + (email != null ? ";" + serializeEmail(email) + "|" : ";"));
-            }
-        }
-
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, false))) {
-            for (String updatedLine : lines) {
-                writer.write(updatedLine);
-                writer.newLine();
-            }
+        // Write that email in the email file
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(emailsFile, true))) {
+            writer.write(email.toString());
+            writer.newLine();
         }
     }
-
-
-    private String serializeEmail(Email email) {
-        return email.getId() + "|" +
-                email.getSender() + "|" +
-                String.join(";", email.getReceiver()) + "|" +
-                email.getSubject() + "|" +
-                email.getContent().replace("\n", "\\n") + "|" +
-                email.getTimestamp();
-    }
-
-
 
     public void stopServer() {
         running = false;
@@ -206,8 +202,8 @@ public class MailServerController {
                     this.userConnected = users.get(email);
 
                     // Enregistrer l'utilisateur comme connecté
-                    synchronized (activeUsers ) {
-                        activeUsers .put(socket, user);
+                    synchronized (activeUsers) {
+                        activeUsers.put(socket, user);
                     }
 
                     // Si l'utilisateur existe, on le considère comme "connecté"
@@ -221,9 +217,8 @@ public class MailServerController {
         private void handleEmail(Email email, PrintWriter out) {
             // Générer un ID unique pour cet email
             String senderEmail = email.getSender();
-            int newId = emailCounters.getOrDefault(senderEmail, 0);
-            email.setId(newId);
-            emailCounters.put(senderEmail, newId + 1);
+            email.setId(emailCount);
+            emailCount++;
 
             boolean success = true;
 
@@ -314,7 +309,7 @@ public class MailServerController {
                 if (emailToDelete != null) {
                     emails.remove(emailToDelete);
                     try {
-                        updateEmailFile(userEmail, emails); // Met à jour `data.txt`
+                        removeEmailFromFile(emailToDelete); // Met à jour `data.txt`
                         logMessage(userEmail + " deleted this email : "+ emailToDelete.getSubject());
                     } catch (IOException e) {
                         out.println("Error: Unable to update file.");
@@ -327,32 +322,50 @@ public class MailServerController {
         }
 
 
-        private synchronized void updateEmailFile(String userEmail, List<Email> emails) throws IOException {
-            File file = getWritableDataFile();
-            List<String> lines = new ArrayList<>();
+        private synchronized void removeEmailFromFile(Email emailToDelete) throws IOException {
+            File emailsFile = getWritableEmailsDataFile();
+            File tempFile = new File(emailsFile.getAbsolutePath() + ".tmp");
 
-            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(emailsFile));
+                 BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    if (line.startsWith(userEmail + ";")) {
-                        StringBuilder newLine = new StringBuilder(userEmail + ";");
-                        for (Email email : emails) {
-                            newLine.append(serializeEmail(email)).append("|");
-                        }
-                        lines.add(newLine.toString());
-                    } else {
-                        lines.add(line);
+                    if (line.trim().isEmpty()) {
+                        continue; // Skip empty lines
                     }
-                }
-            }
 
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, false))) {
-                for (String updatedLine : lines) {
-                    writer.write(updatedLine);
+                    // Extract the email ID (the first field before the first semicolon)
+                    String[] emailParts = line.split(";");
+                    if (emailParts.length == 0) {
+                        logMessage("Malformed line in emails file: " + line);
+                        continue; // Skip malformed lines
+                    }
+
+                    int emailIdInFile = Integer.parseInt(emailParts[0]);
+
+                    // Skip writing the email if its ID matches the email to delete
+                    if (emailIdInFile == emailToDelete.getId()) {
+                        logMessage("Deleted email from file: " + line);
+                        continue;
+                    }
+
+                    // Write the email back to the temp file
+                    writer.write(line);
                     writer.newLine();
                 }
             }
+
+            // Replace the original file with the updated temp file
+            if (!emailsFile.delete()) {
+                throw new IOException("Failed to delete the original emails file.");
+            }
+            if (!tempFile.renameTo(emailsFile)) {
+                throw new IOException("Failed to rename the temp file to emails file.");
+            }
         }
+
+
 
 
         private void handleRetrieveMails(String command, PrintWriter out) {
@@ -366,10 +379,10 @@ public class MailServerController {
 
             synchronized (user.getMailBox()) {
                 if (user.getMailBox().getEmails().isEmpty()) {
-                    out.println("No emails found.");
+                    out.println("No emails.txt found.");
                 } else {
                     for (Email email : user.getMailBox().getEmails()) {
-                        String serializedEmail = serializeEmail(email);
+                        String serializedEmail = email.toString();
                         out.println("Mail:" + serializedEmail);
                     }
                 }
