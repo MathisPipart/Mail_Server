@@ -58,7 +58,8 @@ public class MailServerController {
                 String userEmail = parts[0];
                 User user = new User(userEmail);
 
-                if (parts.length > 1) {
+                // Vérifier si la partie des emails existe
+                if (parts.length > 1 && !parts[1].trim().isEmpty()) {
                     // Emails séparés par "|"
                     String[] emailParts = parts[1].split("\\|");
                     for (int i = 0; i < emailParts.length; i += 6) {
@@ -82,12 +83,14 @@ public class MailServerController {
                     }
                 }
 
+                // Ajouter l'utilisateur à la liste
                 users.put(userEmail, user);
             }
         } catch (IOException e) {
             logMessage("Error reading data.txt: " + e.getMessage());
         }
     }
+
 
 
     private File getWritableDataFile() {
@@ -221,6 +224,7 @@ public class MailServerController {
 
                 try {
                     addEmailToFile(receiver, email); // Ajouter au fichier
+                    logMessage(receiver + " received this email : " + email.getSubject());
                 } catch (Exception e) {
                     logMessage("Error adding email to file: " + e.getMessage());
                     success = false; // Marquer comme échoué si une écriture échoue
@@ -302,7 +306,7 @@ public class MailServerController {
                     emails.remove(emailToDelete);
                     try {
                         updateEmailFile(userEmail, emails); // Met à jour `data.txt`
-                        out.println("Mail deleted successfully.");
+                        logMessage(userEmail + " deleted this email : "+ emailToDelete.getSubject());
                     } catch (IOException e) {
                         out.println("Error: Unable to update file.");
                         logMessage("Error updating file after deleting mail: " + e.getMessage());

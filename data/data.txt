@@ -1,3 +1,3 @@
-mathis.pipart@free.fr;4|a@a.aa|mathis.pipart@gmail.com;mathis.pipart@free.fr|FW: RE: de|I\nwant\nto\ninfor\nyou\nthat\nsomething\nwill\nappend|2024-12-10T10:27:35.660303900|
-mathis.pipart@gmail.com;3|a@a.aa|mathis.pipart@gmail.com|Information|Do you want some information ?|2024-12-10T10:26:40.917752500|
-a@a.aa;0|a@a.aa|a@a.aa|de|Hello,\n\nmy name is mathis|2024-12-10T10:23:12.686911300|1|a@a.aa|a@a.aa|de|Hi Mathis,\n\nPaul|2024-12-10T10:24:46.175225300|0|a@a.aa|a@a.aa|a|a|2024-12-10T11:16:29.307266900|
+mathis.pipart@free.fr;0|a@a.aa|mathis.pipart@free.fr|Test|hello|2024-12-14T11:59:32.086967300|
+mathis.pipart@gmail.com;
+a@a.aa;1|a@a.aa|a@a.aa|de|Hi Mathis,\n\nPaul|2024-12-10T10:24:46.175225300|0|a@a.aa|a@a.aa|a|a|2024-12-10T11:16:29.307266900|
