@@ -19,6 +19,8 @@ public class MailServerController {
     private final Map<String, Integer> emailCounters = new HashMap<>(); // ID unique pour chaque utilisateur
     private final ExecutorService threadPool = Executors.newFixedThreadPool(10);
     private volatile boolean running = true;
+    private final Map<Socket, User> allUsers = new HashMap<>();
+
 
     @FXML
     private TextArea logArea;
@@ -153,6 +155,7 @@ public class MailServerController {
 
     private class ClientHandler implements Runnable {
         private final Socket socket;
+        private User userConnected;
 
         public ClientHandler(Socket socket) {
             this.socket = socket;
@@ -201,9 +204,15 @@ public class MailServerController {
                     out.println("Error: User does not exist.");
                     logMessage("Connection attempt with non-existent user: " + email);
                 } else {
+                    this.userConnected = users.get(email);
                     // Si l'utilisateur existe, on le considère comme "connecté"
                     out.println("User connected successfully.");
                     logMessage("User connected: " + email);
+
+                    // Enregistrer l'utilisateur comme connecté
+                    synchronized (allUsers) {
+                        allUsers.put(socket, user);
+                    }
                 }
             }
         }
@@ -369,9 +378,18 @@ public class MailServerController {
             out.println("END_OF_MAILS");
         }
 
+
         private void handleDisconnect() {
             try {
-                logMessage("Client disconnected: " + socket.getInetAddress());
+                if (userConnected != null) {
+                    logMessage("User disconnected: " + userConnected.getEmail());
+                    synchronized (allUsers) {
+                        allUsers.remove(socket);
+                    }
+                } else {
+                    logMessage("Unknown client disconnected.");
+                }
+
                 if (!socket.isClosed()) {
                     socket.close();
                 }
@@ -379,10 +397,6 @@ public class MailServerController {
                 logMessage("Error while disconnecting client: " + e.getMessage());
             }
         }
-
-
-
-
 
     }
 
