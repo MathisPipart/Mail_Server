@@ -19,7 +19,7 @@ public class MailServerController {
     private final Map<String, Integer> emailCounters = new HashMap<>(); // ID unique pour chaque utilisateur
     private final ExecutorService threadPool = Executors.newFixedThreadPool(10);
     private volatile boolean running = true;
-    private final Map<Socket, User> allUsers = new HashMap<>();
+    private final Map<Socket, User> activeUsers  = new HashMap<>();
 
 
     @FXML
@@ -92,7 +92,6 @@ public class MailServerController {
             logMessage("Error reading data.txt: " + e.getMessage());
         }
     }
-
 
 
     private File getWritableDataFile() {
@@ -200,19 +199,20 @@ public class MailServerController {
 
             synchronized (users) {
                 if (!users.containsKey(email)) {
-                    // Au lieu de créer un nouvel utilisateur, on envoie un message d'erreur
+                    // L'utilisateur n'existe pas, on envoie un message d'erreur
                     out.println("Error: User does not exist.");
                     logMessage("Connection attempt with non-existent user: " + email);
                 } else {
                     this.userConnected = users.get(email);
+
+                    // Enregistrer l'utilisateur comme connecté
+                    synchronized (activeUsers ) {
+                        activeUsers .put(socket, user);
+                    }
+
                     // Si l'utilisateur existe, on le considère comme "connecté"
                     out.println("User connected successfully.");
                     logMessage("User connected: " + email);
-
-                    // Enregistrer l'utilisateur comme connecté
-                    synchronized (allUsers) {
-                        allUsers.put(socket, user);
-                    }
                 }
             }
         }
@@ -382,10 +382,10 @@ public class MailServerController {
         private void handleDisconnect() {
             try {
                 if (userConnected != null) {
-                    logMessage("User disconnected: " + userConnected.getEmail());
-                    synchronized (allUsers) {
-                        allUsers.remove(socket);
+                    synchronized (activeUsers ) {
+                        activeUsers .remove(socket);
                     }
+                    logMessage("User disconnected: " + userConnected.getEmail());
                 } else {
                     logMessage("Unknown client disconnected.");
                 }
