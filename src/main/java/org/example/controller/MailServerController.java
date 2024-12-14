@@ -98,7 +98,7 @@ public class MailServerController {
                     user.getMailBox().addEmail(emailObj);
 
                     // increment email count
-                    emailCount++;
+                    emailCount = Math.max(emailCount, emailObj.getId()) + 1;
                 });
             }
 
@@ -311,6 +311,7 @@ public class MailServerController {
                     try {
                         removeEmailFromFile(emailToDelete); // Met à jour `data.txt`
                         logMessage(userEmail + " deleted this email : "+ emailToDelete.getSubject());
+                        out.println("Mail deleted successfully.");
                     } catch (IOException e) {
                         out.println("Error: Unable to update file.");
                         logMessage("Error updating file after deleting mail: " + e.getMessage());
@@ -381,7 +382,7 @@ public class MailServerController {
                 if (user.getMailBox().getEmails().isEmpty()) {
                     out.println("No emails.txt found.");
                 } else {
-                    for (Email email : user.getMailBox().getEmails()) {
+                    for (Email email : user.getMailBox().getEmails().sorted((m1, m2) -> m2.getTimestamp().compareTo(m1.getTimestamp()))) {
                         String serializedEmail = email.toString();
                         out.println("Mail:" + serializedEmail);
                     }
