@@ -3,6 +3,7 @@ package org.example;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 import org.example.controller.MailServerController;
 
@@ -21,10 +22,18 @@ public class MailServerApplication extends Application {
         Scene scene = new Scene(fxmlLoader.load(), 320, 240);
         stage.setTitle("Mail Server");
         stage.setScene(scene);
-        stage.show();
+
+        scene.getRoot().requestFocus();
 
         // Récupérer le contrôleur associé à la vue FXML
         MailServerController mailServerController = fxmlLoader.getController();
+
+        scene.setOnKeyPressed(event -> {
+            KeyCode keyCode = event.getCode();
+            mailServerController.keyPress(keyCode);
+        });
+
+        stage.show();
 
         // Lancer le serveur sur un thread séparé
         Thread serverThread = new Thread(mailServerController::startServer);

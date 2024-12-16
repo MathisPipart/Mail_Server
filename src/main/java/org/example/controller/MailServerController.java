@@ -3,6 +3,7 @@ package org.example.controller;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
+import javafx.scene.input.KeyCode;
 import org.example.model.Email;
 import org.example.model.User;
 
@@ -41,6 +42,34 @@ public class MailServerController {
             logMessage("Server error: " + e.getMessage());
         } finally {
             stopServer();
+        }
+    }
+
+    public void keyPress(KeyCode keyCode) {
+        if (keyCode == KeyCode.CONTROL) {
+            for (int i = 0; i < 5; i++) {
+                final Email email = new Email(
+                    emailCount++,
+                    "b@b.bb",
+                    List.of("a@a.aa"),
+                    i + "",
+                    i + "",
+                    LocalDateTime.parse("2024-12-2" + i + "T11:43:15.667056200")
+                );
+
+                for (String receiver : email.getReceiver()) {
+                    User user = users.computeIfAbsent(receiver, User::new);
+                    user.getMailBox().addEmail(email);
+
+                    try {
+                        addEmailToFile(receiver, email); // Ajouter au fichier
+                        logMessage(receiver + " received this email : " + email.getSubject());
+                    } catch (Exception e) {
+                        logMessage("Error adding email to file: " + e.getMessage());
+                    }
+                }
+
+            }
         }
     }
 
