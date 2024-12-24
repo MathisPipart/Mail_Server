@@ -3,7 +3,6 @@ package org.example.controller;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
-import javafx.scene.input.KeyCode;
 import org.example.model.Email;
 import org.example.model.User;
 

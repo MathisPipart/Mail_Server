@@ -10,7 +10,6 @@ import org.example.controller.MailServerController;
 import java.io.*;
 
 public class MailServerApplication extends Application {
-    private static final int PORT = 8189;
 
     public static void main(String[] args) {
         launch();

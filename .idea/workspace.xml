@@ -4,10 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="97a04a29-fd3c-47c7-b13c-769ab10c3022" name="Changes" comment="Start to refactor with allUsers">
+    <list default="true" id="97a04a29-fd3c-47c7-b13c-769ab10c3022" name="Changes" comment="code cleaning">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/data.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/emails.txt" beforeDir="false" afterPath="$PROJECT_DIR$/data/emails.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/MailServerApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/MailServerApplication.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/controller/MailServerController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/controller/MailServerController.java" afterDir="false" />
     </list>
@@ -177,7 +175,15 @@
       <option name="project" value="LOCAL" />
       <updated>1734175697088</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="code cleaning">
+      <option name="closed" value="true" />
+      <created>1735052604316</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1735052604316</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -195,6 +201,7 @@
     <MESSAGE value="server checks that the mail exists" />
     <MESSAGE value="Add information on server when add mail ou delete mail" />
     <MESSAGE value="Start to refactor with allUsers" />
-    <option name="LAST_COMMIT_MESSAGE" value="Start to refactor with allUsers" />
+    <MESSAGE value="code cleaning" />
+    <option name="LAST_COMMIT_MESSAGE" value="code cleaning" />
   </component>
 </project>
