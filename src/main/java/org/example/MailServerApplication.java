@@ -22,22 +22,15 @@ public class MailServerApplication extends Application {
         Scene scene = new Scene(fxmlLoader.load(), 320, 240);
         stage.setTitle("Mail Server");
         stage.setScene(scene);
-
         scene.getRoot().requestFocus();
 
-        // Récupérer le contrôleur associé à la vue FXML
         MailServerController mailServerController = fxmlLoader.getController();
-
-        scene.setOnKeyPressed(event -> {
-            KeyCode keyCode = event.getCode();
-            mailServerController.keyPress(keyCode);
-        });
 
         stage.show();
 
-        // Lancer le serveur sur un thread séparé
+        // Run the server on a separate thread
         Thread serverThread = new Thread(mailServerController::startServer);
-        serverThread.setDaemon(true); // Permet de fermer ce thread lorsque l'application JavaFX se termine
+        serverThread.setDaemon(true); // Closes this thread when the application ends
         serverThread.start();
     }
 }

@@ -16,8 +16,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class MailServerController {
+    private static final File USERS_FILE = new File("data/users.txt");
+    private static final File EMAILS_FILE = new File("data/emails.txt");
+
     private final Map<String, User> users = new HashMap<>();
-    private int emailCount = 0; // ID unique pour chaque utilisateur
+    private int emailCount = 0;
     private final ExecutorService threadPool = Executors.newFixedThreadPool(10);
     private volatile boolean running = true;
     private final Map<Socket, User> activeUsers  = new HashMap<>();
@@ -45,42 +48,14 @@ public class MailServerController {
         }
     }
 
-    public void keyPress(KeyCode keyCode) {
-        if (keyCode == KeyCode.CONTROL) {
-            for (int i = 0; i < 5; i++) {
-                final Email email = new Email(
-                    emailCount++,
-                    "b@b.bb",
-                    List.of("a@a.aa"),
-                    i + "",
-                    i + "",
-                    LocalDateTime.parse("2024-12-2" + i + "T11:43:15.667056200")
-                );
-
-                for (String receiver : email.getReceiver()) {
-                    User user = users.computeIfAbsent(receiver, User::new);
-                    user.getMailBox().addEmail(email);
-
-                    try {
-                        addEmailToFile(receiver, email); // Ajouter au fichier
-                        logMessage(receiver + " received this email : " + email.getSubject());
-                    } catch (Exception e) {
-                        logMessage("Error adding email to file: " + e.getMessage());
-                    }
-                }
-
-            }
-        }
-    }
 
     private void loadUsersFromFile() {
-        File file = getWritableUsersDataFile();
-        if (!file.exists()) {
+        if (!USERS_FILE.exists()) {
             logMessage("User file does not exist. Starting fresh.");
             return;
         }
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(USERS_FILE))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.trim().isEmpty()) continue;
@@ -90,18 +65,18 @@ public class MailServerController {
                 users.put(line, user);
             }
         } catch (IOException e) {
-            logMessage("Error reading data.txt: " + e.getMessage());
+            logMessage("Error reading users.txt: " + e.getMessage());
         }
     }
 
+
     private void loadEmailsFromFile() {
-        File file = getWritableEmailsDataFile();
-        if (!file.exists()) {
+        if (!EMAILS_FILE.exists()) {
             logMessage("Emails file does not exist. Starting fresh.");
             return;
         }
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(EMAILS_FILE))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.trim().isEmpty()) continue;
@@ -113,12 +88,12 @@ public class MailServerController {
                 }
 
                 Email emailObj = new Email(
-                    Integer.parseInt(emailParts[0]), // ID
-                    emailParts[1], // Expéditeur
-                    Arrays.asList(emailParts[2].split("\\|")), // Liste des destinataires
-                    emailParts[3], // Sujet
-                    emailParts[4].replace("\\n", "\n"), // Contenu
-                    LocalDateTime.parse(emailParts[5]) // Timestamp
+                    Integer.parseInt(emailParts[0]),
+                    emailParts[1],
+                    Arrays.asList(emailParts[2].split("\\|")),
+                    emailParts[3],
+                    emailParts[4].replace("\\n", "\n"),
+                    LocalDateTime.parse(emailParts[5])
                 );
 
                 // For each receiver in a email, add to their list
@@ -136,46 +111,29 @@ public class MailServerController {
             }
         }
 
-    private File getWritableUsersDataFile() {
-        File directory = new File("data");
-        if (!directory.exists()) {
-            directory.mkdir();
-        }
-        return new File(directory, "users.txt");
-    }
 
-    private File getWritableEmailsDataFile() {
-        File directory = new File("data");
-        if (!directory.exists()) {
-            directory.mkdir();
-        }
-        return new File(directory, "emails.txt");
-    }
-
-
-    private synchronized void addEmailToFile(String userEmail, Email email) throws IOException {
-        File emailsFile = getWritableEmailsDataFile();
-
-        // For each receiver emails, if not in user list, create it
-        email.getReceiver().forEach(receiver -> {
-            if (!users.containsKey(receiver)) {
-                final User newUser = new User(receiver);
-                users.put(receiver, newUser);
-            }
-        });
-
-        // Write that email in the email file
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(emailsFile, true))) {
+    private synchronized void addEmailToFile(Email email) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(EMAILS_FILE, true))) {
             writer.write(email.toString());
             writer.newLine();
         }
     }
+
+
+    private void logMessage(String message) {
+        if (logArea != null) {
+            Platform.runLater(() -> logArea.appendText(message + "\n"));
+        }
+    }
+
 
     public void stopServer() {
         running = false;
         logMessage("Stopping the server...");
         threadPool.shutdown();
     }
+
+
 
     private class ClientHandler implements Runnable {
         private final Socket socket;
@@ -192,25 +150,25 @@ public class MailServerController {
 
                 out.println("Welcome to the Mail Server!");
 
+                label:
                 while (!socket.isClosed()) {
                     Object receivedObject = inStream.readObject();
 
-                    if (receivedObject instanceof String) {
-                        String disconnectText = (String) receivedObject;
-                        if (disconnectText.equals("DISCONNECT")) {
-                            handleDisconnect();
-                            break;
-                        } else {
-                            handleCommand((String) receivedObject, out);
+                    switch (receivedObject) {
+                        case String disconnectText -> {
+                            if (disconnectText.equals("DISCONNECT")) {
+                                handleDisconnect();
+                                break label;
+                            } else {
+                                handleCommand((String) receivedObject, out);
+                            }
                         }
-                    }
-                    else if (receivedObject instanceof Email) {
-                        handleEmail((Email) receivedObject, out);
-                    } else if (receivedObject instanceof User) {
-                        handleUser((User) receivedObject, out);
-                    } else {
-                        out.println("Invalid object received.");
-                        System.err.println("Invalid object received: " + receivedObject);
+                        case Email email -> handleEmail(email, out);
+                        case User user -> handleUser(user, out);
+                        case null, default -> {
+                            out.println("Invalid object received.");
+                            logMessage("Invalid object received: " + receivedObject);
+                        }
                     }
                 }
             } catch (IOException | ClassNotFoundException e) {
@@ -224,18 +182,15 @@ public class MailServerController {
 
             synchronized (users) {
                 if (!users.containsKey(email)) {
-                    // L'utilisateur n'existe pas, on envoie un message d'erreur
                     out.println("Error: User does not exist.");
                     logMessage("Connection attempt with non-existent user: " + email);
                 } else {
                     this.userConnected = users.get(email);
 
-                    // Enregistrer l'utilisateur comme connecté
+                    // Register user as logged in
                     synchronized (activeUsers) {
                         activeUsers.put(socket, user);
                     }
-
-                    // Si l'utilisateur existe, on le considère comme "connecté"
                     out.println("User connected successfully.");
                     logMessage("User connected: " + email);
                 }
@@ -244,8 +199,7 @@ public class MailServerController {
 
 
         private void handleEmail(Email email, PrintWriter out) {
-            // Générer un ID unique pour cet email
-            String senderEmail = email.getSender();
+            // Generate a unique ID for this email
             email.setId(emailCount);
             emailCount++;
 
@@ -256,14 +210,14 @@ public class MailServerController {
                 user.getMailBox().addEmail(email);
 
                 try {
-                    addEmailToFile(receiver, email); // Ajouter au fichier
+                    addEmailToFile(email);
                     logMessage(receiver + " received this email : " + email.getSubject());
                 } catch (Exception e) {
                     logMessage("Error adding email to file: " + e.getMessage());
-                    success = false; // Marquer comme échoué si une écriture échoue
+                    success = false;
                 }
             }
-
+            // Inform the client
             if (success) {
                 out.println("Mail received successfully with ID: " + email.getId());
             } else {
@@ -310,7 +264,6 @@ public class MailServerController {
 
             String userEmail = parts[0];
             int emailId;
-
             try {
                 emailId = Integer.parseInt(parts[1]);
             } catch (NumberFormatException e) {
@@ -338,9 +291,9 @@ public class MailServerController {
                 if (emailToDelete != null) {
                     emails.remove(emailToDelete);
                     try {
-                        removeEmailFromFile(emailToDelete); // Met à jour `data.txt`
-                        logMessage(userEmail + " deleted this email : "+ emailToDelete.getSubject());
+                        removeEmailFromFile(emailToDelete);
                         out.println("Mail deleted successfully.");
+                        logMessage(userEmail + " deleted this email : "+ emailToDelete.getSubject());
                     } catch (IOException e) {
                         out.println("Error: Unable to update file.");
                         logMessage("Error updating file after deleting mail: " + e.getMessage());
@@ -353,7 +306,7 @@ public class MailServerController {
 
 
         private synchronized void removeEmailFromFile(Email emailToDelete) throws IOException {
-            File emailsFile = getWritableEmailsDataFile();
+            File emailsFile = EMAILS_FILE;
             File tempFile = new File(emailsFile.getAbsolutePath() + ".tmp");
 
             try (BufferedReader reader = new BufferedReader(new FileReader(emailsFile));
@@ -394,8 +347,6 @@ public class MailServerController {
                 throw new IOException("Failed to rename the temp file to emails file.");
             }
         }
-
-
 
 
         private void handleRetrieveMails(String command, PrintWriter out) {
@@ -441,11 +392,5 @@ public class MailServerController {
             }
         }
 
-    }
-
-    private void logMessage(String message) {
-        if (logArea != null) {
-            Platform.runLater(() -> logArea.appendText(message + "\n"));
-        }
     }
 }

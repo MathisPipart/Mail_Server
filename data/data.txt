@@ -1,3 +1,0 @@
-mathis.pipart@free.fr;0|a@a.aa|mathis.pipart@free.fr|Test|hello|2024-12-14T11:59:32.086967300|
-mathis.pipart@gmail.com;
-a@a.aa;1|a@a.aa|a@a.aa|de|Hi Mathis,\n\nPaul|2024-12-10T10:24:46.175225300|0|a@a.aa|a@a.aa|a|a|2024-12-10T11:16:29.307266900|
