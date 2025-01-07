@@ -4,7 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="97a04a29-fd3c-47c7-b13c-769ab10c3022" name="Changes" comment="code cleaning v2">
+    <list default="true" id="97a04a29-fd3c-47c7-b13c-769ab10c3022" name="Changes" comment="update email data v2">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/data/emails.txt" beforeDir="false" afterPath="$PROJECT_DIR$/data/emails.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -199,7 +200,15 @@
       <option name="project" value="LOCAL" />
       <updated>1735052762210</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="update email data v2">
+      <option name="closed" value="true" />
+      <created>1736263932189</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1736263932189</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -219,6 +228,7 @@
     <MESSAGE value="Start to refactor with allUsers" />
     <MESSAGE value="code cleaning" />
     <MESSAGE value="code cleaning v2" />
-    <option name="LAST_COMMIT_MESSAGE" value="code cleaning v2" />
+    <MESSAGE value="update email data v2" />
+    <option name="LAST_COMMIT_MESSAGE" value="update email data v2" />
   </component>
 </project>
